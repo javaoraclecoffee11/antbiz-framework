@@ -1,11 +1,12 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.4.5"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.hibernate.orm") version "6.6.13.Final"
-    id("org.graalvm.buildtools.native") version "0.10.6"
-    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("jvm") version "2.1.10" 
+    kotlin("plugin.spring") version "1.9.25" 
+    id("org.springframework.boot") version "3.4.5" 
+    id("io.spring.dependency-management") version "1.1.7" 
+    id("org.hibernate.orm") version "6.6.13.Final" 
+    id("org.graalvm.buildtools.native") version "0.10.6" 
+    kotlin("plugin.jpa") version "1.9.25" 
+    id("com.github.node-gradle.node") version "7.1.0" 
 }
 
 group = "com.github.javaoraclecoffee11"

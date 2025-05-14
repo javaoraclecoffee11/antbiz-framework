@@ -7,3 +7,4 @@
 
 rootProject.name = "antbiz-framework"
 include("backend")
+include("frontend")
