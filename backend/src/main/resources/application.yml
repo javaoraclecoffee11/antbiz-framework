@@ -23,6 +23,7 @@ jwt:
   refresh-token-validity: 2592000
 etc:
   host: ${HOST_NAME}
+  frontend: ${FRONTEND_URL}
 logging:
   level:
     root: INFO

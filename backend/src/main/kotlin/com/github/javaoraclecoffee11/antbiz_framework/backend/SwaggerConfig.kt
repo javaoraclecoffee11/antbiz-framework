@@ -13,11 +13,13 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class SwaggerConfig(
     @Value("\${etc.host}")
-    private val host: String
+    private val host: String,
+    @Value("\${etc.frontend}")
+    private val frontend: String,
 ) {
     private val securitySchemeName = "api token"
 
-    val hosts = "http://localhost:8080, $host"
+    val hosts = "http://localhost:8080, $host, $frontend"
     val servers = hosts.split(",").mapNotNull { it.trim() }.map { Server().url(it) }
 
     @Bean
