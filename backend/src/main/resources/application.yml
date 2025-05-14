@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+jwt:
+  signing-key: ${JWT_SIGNING_KEY}
+  validate-key: ${JWT_VALIDATE_KEY}
+  issuer: ${JWT_ISSUER}
+  access-token-validity: 900
+  refresh-token-validity: 2592000
+etc:
+  host: ${HOST_NAME}
+logging:
+  level:
+    root: INFO
+    com.github.javaoraclecoffee11.antbiz_framework.backend.security: OFF
+snapadmin:
+  enabled: true
+  baseUrl: admin
+  models-package: com.github.javaoraclecoffee11.antbiz_framework.backend.model

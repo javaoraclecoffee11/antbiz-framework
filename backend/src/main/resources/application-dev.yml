@@ -1,0 +1,11 @@
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+spring:
+  jpa:
+    show-sql: true
+logging:
+  level:
+    root: INFO
