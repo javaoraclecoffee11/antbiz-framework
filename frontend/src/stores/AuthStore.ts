@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia';
 import {useRouter} from 'vue-router';
 import {ref} from 'vue';
-import {useRuntimeConfig} from '#app';
-import type {NitroFetchOptions} from "nitropack";
+import {useClient} from "~/plugins/client";
+import {authenticateUser, getUserInfo, logoutUser, refreshToken as refreshTokenRequest} from "~/client";
 
 
 export interface User {
@@ -13,8 +13,8 @@ export interface User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-    const config = useRuntimeConfig();
     const router = useRouter();
+    const client = useClient();
 
     const accessToken = ref<string | null>(null);
     const refreshToken = ref<string | null>(null);
@@ -30,14 +30,18 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function login(email: string, password: string) {
         try {
-            const response = await $fetch<{ data: {accessToken: string, refreshToken: string}}>('/auth/login', {
-                method: 'POST',
-                baseURL: config.public.apiBaseUrl, // backend API URL
+            const response = await authenticateUser({
+                composable: '$fetch',
+                client,
                 body: {
                     email,
                     password,
-                },
-            });
+                }
+            })
+
+            if(response?.data == null || response?.code != 200) {
+                throw Error("Login failed")
+            }
 
             accessToken.value = response.data.accessToken;
             refreshToken.value = response.data.refreshToken;
@@ -55,14 +59,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function logout() {
         try {
-            await authFetch<string>('/auth/logout', {
-                method: 'POST',
-                baseURL: config.public.apiBaseUrl,
+            await logoutUser({
+                composable: '$fetch',
                 body: {
-                    accessToken: accessToken.value,
-                    refreshToken: refreshToken.value,
-                },
-            });
+                    accessToken: accessToken.value ?? "",
+                    refreshToken: refreshToken.value ?? "",
+                }
+            })
             accessToken.value = null;
             refreshToken.value = null;
             isAuthenticated.value = false;
@@ -81,13 +84,16 @@ export const useAuthStore = defineStore('auth', () => {
                 throw new Error('Refresh token is missing. Please log in again.');
             }
 
-            const response = await $fetch<{data: { accessToken: string, refreshToken: string }}>('/auth/revoke', {
-                method: 'POST',
-                baseURL: config.public.apiBaseUrl, // backend API URL
+            const response = await refreshTokenRequest({
+                composable: '$fetch',
                 body: {
                     refreshToken: refreshToken.value,
-                },
-            });
+                }
+            })
+
+            if(response.data == null || response.code != 200) {
+                throw Error("Refresh failed")
+            }
 
             accessToken.value = response.data.accessToken;
             refreshToken.value = response.data.refreshToken;
@@ -100,39 +106,20 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function fetchUserProfile() {
         try {
-            const resonse = await authFetch('/auth/me', {
-                method: 'GET',
-                baseURL: config.public.apiBaseUrl,
-            }) as {data: { id: string, email: string, username: string, roles: string[] }};
+            const response = await getUserInfo({
+                composable: '$fetch',
+                auth: () => accessToken.value ?? ""
+            });
 
-            userInfo.value = resonse.data;
+            if(response.data == null || response.code != 200) {
+                throw Error("Refresh failed")
+            }
+
+            userInfo.value = response.data;
             isAuthenticated.value = true;
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
             throw new Error('사용자 정보를 가져오는 데 실패했습니다.');
-        }
-    }
-
-    async function authFetch<T>(
-        urlPath: string,
-        options: NitroFetchOptions<any>
-    ): Promise<T> {
-        if (!accessToken.value) {
-            await refreshAccessToken();
-            await fetchUserProfile();
-        }
-
-        try {
-            return await $fetch<T>(urlPath, {
-                headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${accessToken.value}`,
-                },
-                ...options,
-            });
-        } catch (error) {
-            console.error(`Request to ${urlPath} failed:`, error);
-            throw error;
         }
     }
 
@@ -145,7 +132,6 @@ export const useAuthStore = defineStore('auth', () => {
         userInfo,
         logout,
         refreshAccessToken,
-        authFetch,
     };
 }, {
     persist: {

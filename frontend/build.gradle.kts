@@ -15,6 +15,11 @@ tasks.withType<KotlinCompile> {
     enabled = false
 }
 
+tasks.create<NpmTask>("generateSdk") {
+    npmCommand.set(listOf("run", "openapi-ts"))
+    dependsOn("npmInstall")
+}
+
 tasks.create<NpmTask>("clean") {
     actions.clear()
 
@@ -24,7 +29,7 @@ tasks.create<NpmTask>("clean") {
 
 tasks.register<NpmTask>("run") {
     npmCommand.set(listOf("run", "dev"))
-    dependsOn("npmInstall")
+    dependsOn("npmInstall", "generateSdk")
 
     outputs.upToDateWhen { true }
 }
